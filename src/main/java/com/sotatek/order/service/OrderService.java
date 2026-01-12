@@ -18,6 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import com.sotatek.order.exception.InvalidMemberException;
+import com.sotatek.order.exception.OutOfStockException;
+import com.sotatek.order.exception.PaymentFailedException;
+import com.sotatek.order.infrastructure.client.MemberClient;
+import com.sotatek.order.infrastructure.client.PaymentClient;
+import com.sotatek.order.infrastructure.client.ProductClient;
+import com.sotatek.order.infrastructure.client.dto.MemberResponse;
+import com.sotatek.order.infrastructure.client.dto.PaymentRequest;
+import com.sotatek.order.infrastructure.client.dto.PaymentResponse;
+import com.sotatek.order.infrastructure.client.dto.ProductResponse;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -26,21 +37,63 @@ public class OrderService {
 
     private final OrderRepository repository;
     private final OrderMapper mapper;
+    private final MemberClient memberClient;
+    private final ProductClient productClient;
+    private final PaymentClient paymentClient;
 
     public OrderResponseDTO createOrder(OrderRequestDTO request) {
+        log.info("Creating order for member: {}", request.getMemberId());
+
+        // 1. Validate Member
+        MemberResponse member = memberClient.getMember(request.getMemberId());
+        if (!member.isExists() || !member.isActive()) {
+            throw new InvalidMemberException("Member invalid or inactive: " + request.getMemberId());
+        }
+
+        // 2. Validate Product & Stock
+        ProductResponse product = productClient.checkStock(request.getProductId(), request.getQuantity());
+        if (!product.isAvailable() || product.getStock() < request.getQuantity()) {
+            log.warn("Insufficient stock for product {} (requested: {}, available: {})",
+                    request.getProductId(), request.getQuantity(), product.getStock());
+            throw new OutOfStockException("Insufficient stock for product " + request.getProductId());
+        }
+
+        // Optional: Sync price
+        if (product.getPrice() != null) {
+            request.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
+        }
+
+        // 3. Validate Price
         if (request.getTotalPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Total price must be positive");
+            throw new IllegalArgumentException("Total price must be > 0");
         }
 
+        // 4. Save Order (PENDING)
         Order order = mapper.toEntity(request);
+        order.setStatus(OrderStatus.PENDING);
+        Order saved = repository.save(order);
+        log.info("Created pending order with ID: {}", saved.getId());
 
-        // Handle initial status if not provided
-        if (order.getStatus() == null) {
-            order.setStatus(OrderStatus.PENDING);
+        // 5. Process Payment (Synchronous)
+        try {
+            PaymentResponse payment = paymentClient.processPayment(PaymentRequest.builder()
+                    .orderId(saved.getId())
+                    .amount(saved.getTotalPrice())
+                    .build());
+
+            if (payment.isSuccess()) {
+                log.info("Payment successful for order {}", saved.getId());
+                saved.setStatus(OrderStatus.CONFIRMED);
+                saved = repository.save(saved);
+            } else {
+                log.warn("Payment failed for order {}: {}", saved.getId(), payment.getMessage());
+                throw new PaymentFailedException("Payment failed: " + payment.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("Payment error for order {}", saved.getId(), e);
+            throw new PaymentFailedException("Payment error: " + e.getMessage());
         }
 
-        Order saved = repository.save(order);
-        log.info("Created order with ID: {}", saved.getId());
         return mapper.toResponseDTO(saved);
     }
 
@@ -68,7 +121,8 @@ public class OrderService {
             existing.setTotalPrice(updateRequest.getTotalPrice());
         }
         if (updateRequest.getStatus() != null) {
-            // Có thể thêm business rule: chỉ cho phép cancel nếu đang PENDING hoặc CONFIRMED
+            // Có thể thêm business rule: chỉ cho phép cancel nếu đang PENDING hoặc
+            // CONFIRMED
             if (updateRequest.getStatus() == OrderStatus.CANCELLED &&
                     existing.getStatus() != OrderStatus.PENDING &&
                     existing.getStatus() != OrderStatus.CONFIRMED) {
@@ -77,7 +131,8 @@ public class OrderService {
             existing.setStatus(updateRequest.getStatus());
         }
 
-        // Lưu ý: Không update orderItems ở đây (nếu cần update items → cần endpoint riêng hoặc logic phức tạp hơn)
+        // Lưu ý: Không update orderItems ở đây (nếu cần update items → cần endpoint
+        // riêng hoặc logic phức tạp hơn)
 
         Order updated = repository.save(existing);
         return mapper.toResponseDTO(updated);

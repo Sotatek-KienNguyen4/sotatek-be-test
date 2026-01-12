@@ -41,6 +41,11 @@ dependencies {
     
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    
+    // Phase 4: External Integrations
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'
+    implementation 'io.github.resilience4j:resilience4j-feign:2.2.0'
+    testImplementation 'org.wiremock:wiremock-jre8-standalone:2.35.0'
 }
 
 dependencyManagement {
