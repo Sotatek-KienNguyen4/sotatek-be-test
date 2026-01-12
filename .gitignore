@@ -1,7 +1,16 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+build/
+*.class
+
 # Gradle
 .gradle/
-build/
-!gradle/wrapper/gradle-wrapper.jar
+gradlew
+gradlew.bat
 
 # IDE
 .idea/
@@ -11,6 +20,7 @@ build/
 .vscode/
 *.swp
 *.swo
+out/
 
 # OS
 .DS_Store
@@ -24,7 +34,3 @@ logs/
 application-local.yml
 application-*.yml
 !application.yml
-
-# Test
-/bin/
-/out/

@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  db:
+    container_name: db
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=learn
+      - POSTGRES_PASSWORD=123456a@
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d 'user=learn dbname=123456a@'" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - py-network
+
+volumes:
+  db:
+    driver: local
+
+networks:
+  py-network:
+    name: py

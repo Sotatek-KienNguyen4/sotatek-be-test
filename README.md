@@ -51,8 +51,7 @@ Build REST APIs for Order management with the following operations:
 | Create Order | `POST /api/orders` | Create a new order |
 | Get Order | `GET /api/orders/{id}` | Retrieve order details |
 | List Orders | `GET /api/orders` | List orders (with pagination) |
-| Update Order | `PUT /api/orders/{id}` | Update an existing order |
-| Delete Order | `DELETE /api/orders/{id}` | Delete/Cancel an order |
+| Update Order | `PUT /api/orders/{id}` | Cancel Order |
 
 ### External Service Integration
 
