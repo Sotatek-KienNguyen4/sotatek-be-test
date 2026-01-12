@@ -1,0 +1,17 @@
+CREATE TABLE orders (
+    id UUID PRIMARY KEY,
+    member_id BIGINT NOT NULL,
+    total_price DECIMAL(19, 2) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE order_items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id UUID NOT NULL,
+    product_id BIGINT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(19, 2) NOT NULL,
+    CONSTRAINT fk_order_items_orders FOREIGN KEY (order_id) REFERENCES orders(id)
+);
