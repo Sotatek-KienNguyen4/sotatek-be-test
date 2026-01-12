@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "member-service", url = "${member.service.url}")
+@FeignClient(name = "member-service", url = "${member.service.url}", primary = false)
 public interface MemberClient {
 
     @GetMapping("/members/{id}")

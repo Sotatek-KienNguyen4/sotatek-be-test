@@ -4,6 +4,8 @@ server:
     include-message: always
 
 spring:
+  profiles:
+    active: local
   application:
     name: order-service
   datasource:

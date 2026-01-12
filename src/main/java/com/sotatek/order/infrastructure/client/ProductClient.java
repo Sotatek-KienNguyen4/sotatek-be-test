@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
 
-@FeignClient(name = "product-service", url = "${product.service.url}")
+@FeignClient(name = "product-service", url = "${product.service.url}", primary = false)
 public interface ProductClient {
 
     @GetMapping("/products/{id}/stock")

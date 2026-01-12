@@ -3,13 +3,15 @@ package com.sotatek.order.infrastructure.client;
 import com.sotatek.order.infrastructure.client.dto.PaymentRequest;
 import com.sotatek.order.infrastructure.client.dto.PaymentResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Component
-@ConditionalOnProperty(name = "spring.profiles.active", havingValue = "dev")
+@Primary
+@ConditionalOnProperty(name = "spring.profiles.active", havingValue = "local")
 public class MockPaymentClient implements PaymentClient {
 
     @Override

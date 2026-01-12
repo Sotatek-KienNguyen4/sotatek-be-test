@@ -2,10 +2,12 @@ package com.sotatek.order.infrastructure.client;
 
 import com.sotatek.order.infrastructure.client.dto.MemberResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(name = "spring.profiles.active", havingValue = "dev")
+@Primary
+@ConditionalOnProperty(name = "spring.profiles.active", havingValue = "local")
 public class MockMemberClient implements MemberClient {
 
     @Override
