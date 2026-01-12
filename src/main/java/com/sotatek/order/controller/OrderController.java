@@ -8,6 +8,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -56,8 +60,7 @@ public class OrderController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update / Cancel an order",
-            description = "Updates order details or cancels by setting status to CANCELLED. Partial update supported.")
+    @Operation(summary = "Update / Cancel an order", description = "Updates order details or cancels by setting status to CANCELLED. Partial update supported.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Order updated successfully"),
             @ApiResponse(responseCode = "404", description = "Order not found"),
@@ -65,7 +68,7 @@ public class OrderController {
     })
     public ResponseEntity<OrderResponseDTO> update(
             @PathVariable UUID id,
-            @Valid @RequestBody OrderUpdateDTO updateRequest) {  // <-- đổi sang OrderUpdateDTO
+            @Valid @RequestBody OrderUpdateDTO updateRequest) { // <-- đổi sang OrderUpdateDTO
         return ResponseEntity.ok(service.updateOrder(id, updateRequest));
     }
 }
